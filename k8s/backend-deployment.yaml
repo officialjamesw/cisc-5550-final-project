@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-backend
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+        - name: backend
+          image: us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5001
+          env:
+            - name: DATABASE_PATH
+              value: /data/todos.db
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: todo-secrets
+                  key: secret-key
+            - name: REMINDER_WINDOW_HOURS
+              value: "24"
+          volumeMounts:
+            - name: todo-data
+              mountPath: /data
+      volumes:
+        - name: todo-data
+          persistentVolumeClaim:
+            claimName: todo-data

@@ -1,0 +1,139 @@
+<html lang="en">
+<head>
+    <title>Todo List</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            padding-top: 24px;
+        }
+        .page-header {
+            margin-top: 0;
+        }
+        .done {
+            text-decoration: line-through;
+            color: #777;
+        }
+        .task-actions {
+            white-space: nowrap;
+        }
+        .reminder-overdue {
+            color: #a94442;
+            font-weight: bold;
+        }
+        .reminder-due-soon {
+            color: #8a6d3b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="page-header">
+            <p class="pull-right">
+                signed in as <strong>{{ username }}</strong>
+                <a class="btn btn-default btn-xs" href="/logout">log out</a>
+            </p>
+            <h3>oh, so many things to do...</h3>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if reminders %}
+        <div class="alert alert-warning">
+            <strong>Reminder:</strong>
+            {{ reminders|length }} task{% if reminders|length != 1 %}s{% endif %} due soon or overdue.
+        </div>
+        {% endif %}
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Task</th>
+                    <th>Due date</th>
+                    <th>Reminder</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in todolist %}
+                <tr>
+                    <td {% if entry.status == 'done' %}class="done"{% endif %}>{{ entry.what_to_do }}</td>
+                    <td>{{ entry.due_date or '' }}</td>
+                    <td>
+                        {% if entry.reminder == 'overdue' %}
+                        <span class="reminder-overdue">overdue</span>
+                        {% elif entry.reminder == 'due_soon' %}
+                        <span class="reminder-due-soon">due soon</span>
+                        {% else %}
+                        <span class="text-muted">none</span>
+                        {% endif %}
+                    </td>
+                    <td class="task-actions">
+                        {% if entry.status != 'done' %}
+                        <form action="/mark/{{ entry.id }}" method="POST" style="display:inline">
+                            <button class="btn btn-success btn-xs" type="submit">mark as done</button>
+                        </form>
+                        {% endif %}
+                        <form action="/delete/{{ entry.id }}" method="POST" style="display:inline">
+                            <button class="btn btn-danger btn-xs" type="submit">delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">
+                        <em>Unbelievable. Nothing to do for now.</em>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button onclick="toggle_entry_form();" id="toggle_button">add a new item</button>
+    </div>
+
+    <div class="container">
+        <form action="/add" method="POST" id="add-form" style="display:none">
+            <div class="row">
+                <div class="col-sm-6">
+                    what to do:
+                    <input type="text" size="50" name="what_to_do" value="more homework?">
+                </div>
+                <div class="col-sm-3">
+                    when:
+                    <input type="datetime-local" name="due_date" value="">
+                </div>
+                <div class="col-sm-3">
+                    <input type="submit" value="save the new item">
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        var show_entry_form = false;
+
+        function toggle_entry_form() {
+            if (show_entry_form) {
+                $('#add-form').hide();
+                $('#toggle_button').text("add a new item");
+            } else {
+                $('#add-form').show();
+                $('#toggle_button').text("cancel the new entry");
+            }
+            show_entry_form = !show_entry_form;
+        };
+    </script>
+</body>
+</html>

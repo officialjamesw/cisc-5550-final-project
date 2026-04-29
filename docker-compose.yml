@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    environment:
+      DATABASE_PATH: /data/todos.db
+      SECRET_KEY: ${SECRET_KEY:-change-me-for-local-testing}
+      REMINDER_WINDOW_HOURS: 24
+    ports:
+      - "5001:5001"
+    volumes:
+      - todo-data:/data
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      API_BASE: http://backend:5001
+      SECRET_KEY: ${SECRET_KEY:-change-me-for-local-testing}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - backend
+
+volumes:
+  todo-data:
