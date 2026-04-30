@@ -259,7 +259,7 @@ docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-
 ### Step 7: Create or Connect to GKE Cluster
 
 ```powershell
-gcloud container clusters get-credentials todo-cluster --location us-central1-a
+gcloud container clusters get-credentials todolist-cluster --location us-central1
 ```
 
 ### Step 8: Verify Kubernetes Connection
