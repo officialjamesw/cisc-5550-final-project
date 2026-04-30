@@ -12,6 +12,7 @@ For a more detailed write-up, see [REPORT.md](REPORT.md).
 - User-specific task lists
 - Due dates for tasks
 - Reminder states for due soon and overdue tasks
+- Backend audit logs for registration, login, and task actions
 - Dockerized frontend and backend services
 - Local multi-container testing with Docker Compose
 - GKE deployment using Kubernetes Deployments, Services, Secret, and PersistentVolumeClaim
@@ -80,6 +81,8 @@ Health check:
 ```text
 http://localhost:5001/health
 ```
+
+Backend logs include audit events for registration, login, task creation, task completion, and task deletion.
 
 To stop the local containers:
 
@@ -183,6 +186,23 @@ Check rollout status:
 ```powershell
 kubectl rollout status deployment/todo-backend
 kubectl rollout status deployment/todo-frontend
+```
+
+View backend audit logs:
+
+```powershell
+kubectl logs deployment/todo-backend
+```
+
+Example audit actions:
+
+```text
+audit action=register
+audit action=login
+audit action=login_failed
+audit action=task_created
+audit action=task_completed
+audit action=task_deleted
 ```
 
 ### 10. Open the App
@@ -492,6 +512,27 @@ Check frontend logs:
 ```powershell
 kubectl logs deployment/todo-frontend
 ```
+
+### View User Activity Logs
+
+The backend writes audit logs for major user actions:
+
+```powershell
+kubectl logs deployment/todo-backend
+```
+
+Useful actions to look for:
+
+```text
+audit action=register
+audit action=login
+audit action=login_failed
+audit action=task_created
+audit action=task_completed
+audit action=task_deleted
+```
+
+These logs help verify that users are registering, logging in, and managing tasks.
 
 ### Stop Charges
 

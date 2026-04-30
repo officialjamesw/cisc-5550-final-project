@@ -16,6 +16,17 @@ app = Flask(__name__)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 
+def audit_log(action, username=None, user_id=None, task_id=None, task_text=None):
+    parts = [
+        f"audit action={action}",
+        f"user_id={user_id}" if user_id is not None else None,
+        f"username={username}" if username else None,
+        f"task_id={task_id}" if task_id is not None else None,
+        f"task={task_text!r}" if task_text else None,
+    ]
+    app.logger.info(" ".join(part for part in parts if part))
+
+
 def get_db():
     if "db" not in g:
         db_dir = os.path.dirname(DATABASE)
@@ -130,6 +141,11 @@ def require_user():
     return user_id, None
 
 
+def get_username(user_id):
+    user = get_db().execute("SELECT username FROM users WHERE id = ?", (user_id,)).fetchone()
+    return user["username"] if user else None
+
+
 @app.get("/health")
 def health():
     return jsonify({"status": "ok"})
@@ -154,6 +170,7 @@ def register():
     except sqlite3.IntegrityError:
         return jsonify({"error": "That username is already taken."}), 409
 
+    audit_log("register", username=username, user_id=cursor.lastrowid)
     return jsonify({"token": make_token(cursor.lastrowid), "username": username}), 201
 
 
@@ -165,8 +182,10 @@ def login():
 
     user = get_db().execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
     if not user or not check_password_hash(user["password_hash"], password):
+        audit_log("login_failed", username=username)
         return jsonify({"error": "Invalid username or password."}), 401
 
+    audit_log("login", username=user["username"], user_id=user["id"])
     return jsonify({"token": make_token(user["id"]), "username": user["username"]})
 
 
@@ -208,6 +227,13 @@ def add_task():
     )
     get_db().commit()
     row = get_db().execute("SELECT * FROM tasks WHERE id = ?", (cursor.lastrowid,)).fetchone()
+    audit_log(
+        "task_created",
+        username=get_username(user_id),
+        user_id=user_id,
+        task_id=cursor.lastrowid,
+        task_text=what_to_do,
+    )
     return jsonify(task_to_dict(row)), 201
 
 
@@ -217,11 +243,23 @@ def mark_done(task_id):
     if error:
         return error
 
+    task = get_db().execute(
+        "SELECT what_to_do FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, user_id),
+    ).fetchone()
     get_db().execute(
         "UPDATE tasks SET status = 'done', completed_at = ? WHERE id = ? AND user_id = ?",
         (now_utc().isoformat(), task_id, user_id),
     )
     get_db().commit()
+    if task:
+        audit_log(
+            "task_completed",
+            username=get_username(user_id),
+            user_id=user_id,
+            task_id=task_id,
+            task_text=task["what_to_do"],
+        )
     return jsonify({"status": "done"})
 
 
@@ -231,8 +269,20 @@ def delete_task(task_id):
     if error:
         return error
 
+    task = get_db().execute(
+        "SELECT what_to_do FROM tasks WHERE id = ? AND user_id = ?",
+        (task_id, user_id),
+    ).fetchone()
     get_db().execute("DELETE FROM tasks WHERE id = ? AND user_id = ?", (task_id, user_id))
     get_db().commit()
+    if task:
+        audit_log(
+            "task_deleted",
+            username=get_username(user_id),
+            user_id=user_id,
+            task_id=task_id,
+            task_text=task["what_to_do"],
+        )
     return jsonify({"status": "deleted"})
 
 

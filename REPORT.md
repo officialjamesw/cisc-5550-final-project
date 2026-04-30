@@ -82,6 +82,16 @@ Reminder states include:
 
 The frontend displays reminder information so users can quickly see which tasks need attention.
 
+### Audit Logging
+
+The backend now writes audit logs for important user actions. This makes it possible to see activity such as account registration, login attempts, task creation, task completion, and task deletion in the backend logs.
+
+These logs can be viewed with:
+
+```powershell
+kubectl logs deployment/todo-backend
+```
+
 ## 5. Backend API
 
 I added a new backend service in `backend.py`.
@@ -100,6 +110,17 @@ GET  /health
 ```
 
 The backend uses bearer-token authentication. After login or registration, the backend returns a token. The frontend sends that token back to the backend when requesting, creating, completing, or deleting tasks.
+
+The backend also writes audit events for:
+
+```text
+audit action=register
+audit action=login
+audit action=login_failed
+audit action=task_created
+audit action=task_completed
+audit action=task_deleted
+```
 
 ## 6. Frontend Updates
 
@@ -323,6 +344,7 @@ This project experimented with several technologies beyond the original applicat
 - Flask backend API development.
 - Password hashing.
 - Token-based authentication.
+- Backend audit logging.
 - User-specific data isolation.
 - SQLite persistence.
 - Docker images.
