@@ -1,5 +1,6 @@
 import os
 import sqlite3
+import logging
 from datetime import datetime, timedelta, timezone
 
 from flask import Flask, g, jsonify, request
@@ -13,6 +14,8 @@ TOKEN_MAX_AGE_SECONDS = int(os.environ.get("TOKEN_MAX_AGE_SECONDS", "86400"))
 REMINDER_WINDOW_HOURS = int(os.environ.get("REMINDER_WINDOW_HOURS", "24"))
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+app.logger.setLevel(logging.INFO)
 serializer = URLSafeTimedSerializer(SECRET_KEY)
 
 
