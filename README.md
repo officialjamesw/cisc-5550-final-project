@@ -100,17 +100,19 @@ docker compose down -v
 
 These commands assume my own configuration:
 
-- Google Cloud project: `infinite-alcove-485123-p2`
+- Google Cloud project: `YOUR_PROJECT_ID`
 - Region: `us-central1`
 - Location: `us-central1`
 - GKE cluster: `todolist-cluster`
 - Cluster mode: GKE Autopilot
 - Artifact Registry repo: `todo-repo`
 
+Before running the commands, replace every `YOUR_PROJECT_ID` placeholder with your actual Google Cloud project ID.
+
 ### 1. Set the Google Cloud Project
 
 ```powershell
-gcloud config set project infinite-alcove-485123-p2
+gcloud config set project YOUR_PROJECT_ID
 ```
 
 ### 2. Enable Required APIs
@@ -119,7 +121,28 @@ gcloud config set project infinite-alcove-485123-p2
 gcloud services enable container.googleapis.com artifactregistry.googleapis.com
 ```
 
-### 3. Create Artifact Registry Repository
+### 3. Create the GKE Autopilot Cluster
+
+If the cluster does not already exist, create it first:
+
+```powershell
+gcloud container clusters create-auto todolist-cluster `
+  --location=us-central1
+```
+
+This may take several minutes. After it finishes, verify that the cluster exists:
+
+```powershell
+gcloud container clusters list
+```
+
+You should see:
+
+```text
+todolist-cluster
+```
+
+### 4. Create Artifact Registry Repository
 
 ```powershell
 gcloud artifacts repositories create todo-repo `
@@ -128,33 +151,33 @@ gcloud artifacts repositories create todo-repo `
   --description="Todo app Docker images"
 ```
 
-### 4. Configure Docker Authentication
+### 5. Configure Docker Authentication
 
 ```powershell
 gcloud auth configure-docker us-central1-docker.pkg.dev
 ```
 
-### 5. Build Images
+### 6. Build Images
 
 ```powershell
-docker build -t us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest .
+docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest .
 ```
 
 ```powershell
-docker build -t us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest -f Dockerfile.backend .
+docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest -f Dockerfile.backend .
 ```
 
-### 6. Push Images
+### 7. Push Images
 
 ```powershell
-docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest
+docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest
 ```
 
 ```powershell
-docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest
+docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest
 ```
 
-### 7. Connect kubectl to GKE
+### 8. Connect kubectl to GKE
 
 ```powershell
 gcloud container clusters get-credentials todolist-cluster --location us-central1
@@ -166,13 +189,19 @@ Verify the connection:
 kubectl get nodes
 ```
 
-### 8. Apply Kubernetes Manifests
+For GKE Autopilot, it is also okay to focus on workload resources:
+
+```powershell
+kubectl get pods
+```
+
+### 9. Apply Kubernetes Manifests
 
 ```powershell
 kubectl apply -f k8s
 ```
 
-### 9. Verify the Deployment
+### 10. Verify the Deployment
 
 ```powershell
 kubectl get pods
@@ -205,7 +234,7 @@ audit action=task_completed
 audit action=task_deleted
 ```
 
-### 10. Open the App
+### 11. Open the App
 
 Get the frontend external IP:
 
@@ -386,7 +415,7 @@ Authenticate Docker with Artifact Registry:
 
 ```powershell
 gcloud auth login
-gcloud config set project infinite-alcove-485123-p2
+gcloud config set project YOUR_PROJECT_ID
 gcloud auth configure-docker us-central1-docker.pkg.dev
 ```
 
@@ -399,7 +428,7 @@ gcloud artifacts repositories list --location=us-central1
 Then retry:
 
 ```powershell
-docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest
+docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest
 ```
 
 ### Docker Image Built Locally But GKE Cannot Pull It

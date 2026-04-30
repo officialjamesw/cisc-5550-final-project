@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest
+          image: us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5001

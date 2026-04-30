@@ -205,8 +205,8 @@ I used Google Artifact Registry.
 Image names:
 
 ```text
-us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest
-us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest
+us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest
+us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest
 ```
 
 The images were built locally and pushed to Artifact Registry.
@@ -233,7 +233,7 @@ The backend Service is a `ClusterIP`, which means it is only reachable inside th
 ### Step 1: Set the Google Cloud Project
 
 ```powershell
-gcloud config set project infinite-alcove-485123-p2
+gcloud config set project YOUR_PROJECT_ID
 ```
 
 ### Step 2: Enable Required APIs
@@ -260,21 +260,21 @@ gcloud auth configure-docker us-central1-docker.pkg.dev
 ### Step 5: Build Docker Images
 
 ```powershell
-docker build -t us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest .
+docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest .
 ```
 
 ```powershell
-docker build -t us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest -f Dockerfile.backend .
+docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest -f Dockerfile.backend .
 ```
 
 ### Step 6: Push Images to Artifact Registry
 
 ```powershell
-docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-frontend:latest
+docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-frontend:latest
 ```
 
 ```powershell
-docker push us-central1-docker.pkg.dev/infinite-alcove-485123-p2/todo-repo/todo-backend:latest
+docker push us-central1-docker.pkg.dev/YOUR_PROJECT_ID/todo-repo/todo-backend:latest
 ```
 
 ### Step 7: Create or Connect to GKE Cluster
